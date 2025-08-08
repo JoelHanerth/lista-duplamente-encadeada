@@ -1,9 +1,9 @@
 Matricula,CPF,Nome,Nota,Idade,Curso,Cidade
-1,915.216.859-08,Wallace Sampaio,20.35,23,Direito,Rio de Janeiro
-A0000000,436.309.490-70,Gabriela Silva,98.08,26,Psicologia,Porto Alegre
-A0000002,436.309.490-70,Caio Almeida,99.53,29,Biologia,Brasília
-A0000003,436.309.490-70,Eduarda Conceição,66.31,30,Direito,São Paulo
-A0000004,436.309.490-70,Adriel Medeiros,47.91,27,Arquitetura,Porto Alegre
+A0000000,915.216.859-08,Wallace Sampaio,20.35,23,Direito,Rio de Janeiro
+A0000001,436.309.490-70,Gabriela Silva,98.08,26,Psicologia,Porto Alegre
+A0000002,848.690.759-46,Caio Almeida,99.53,29,Biologia,Brasília
+A0000003,388.064.890-54,Eduarda Conceição,66.31,30,Direito,São Paulo
+A0000004,009.789.066-91,Adriel Medeiros,47.91,27,Arquitetura,Porto Alegre
 A0000005,533.886.451-75,Elaine Torres,34.16,29,Medicina,Recife
 A0000006,909.195.768-93,Marcelo Garcia,93.64,29,Biologia,São Paulo
 A0000007,763.419.396-80,Francisco Dutra,23.33,30,Computação,Manaus
@@ -18,4 +18,4 @@ A0000015,445.054.631-84,Cássio Souza,97.29,24,Arquitetura,Manaus
 A0000016,142.352.241-90,Ingrid Araújo,88.45,19,Engenharia,Rio de Janeiro
 A0000017,817.587.494-58,Gabriel Sampaio,45.57,24,Medicina,Rio de Janeiro
 A0000018,526.342.749-20,Frederico Torres,77.39,23,Administração,Porto Alegre
-A0000019,436.309.490-70,Aline Dias,81.76,26,Arquitetura,Brasília
+A0000019,901.092.161-13,Aline Dias,81.76,26,Arquitetura,Brasília

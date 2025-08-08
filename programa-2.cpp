@@ -6,16 +6,20 @@
 #include <ctime>
 #include <iostream>
 
+#define TAM 10000
+
+using namespace std;
+
 struct Aluno{
     Aluno *prox;
     Aluno *ant;
-    std::string matricula;
-    std::string cpf;
-    std::string nome;
+    string matricula;
+    string cpf;
+    string nome;
     float nota;
     int idade;
-    std::string curso;
-    std::string cidade;
+    string curso;
+    string cidade;
 };
 
 struct Alunos{
@@ -24,10 +28,23 @@ struct Alunos{
     int quant;
 };
 
+struct hashTable {
+    Alunos tabela[TAM];
+    int tamanho;
+};
+
+
 void inicializa(Alunos *lista){
     lista->inicio = NULL;
     lista->final = NULL;
     lista->quant = 0;
+}
+
+void inicializaHashTable(hashTable *tabela) {
+    for (int i = 0; i < TAM; i++) {
+        inicializa(&tabela->tabela[i]);
+    }
+    tabela->tamanho = 0;
 }
 
 bool inserir_simples(Alunos *alunos, Aluno *novo_aluno) {
@@ -94,7 +111,7 @@ void imprime_alunos(Alunos *alunos) {
     } 
 }
 
-Aluno * criarAluno(std::string matricula, std::string cpf, std::string nome, float nota, int idade, std::string curso, std::string cidade){
+Aluno * criarAluno(string matricula, string cpf, string nome, float nota, int idade, string curso, string cidade){
     Aluno* novo = new Aluno;
     novo->prox = NULL;
     novo->ant = NULL;
@@ -109,29 +126,42 @@ Aluno * criarAluno(std::string matricula, std::string cpf, std::string nome, flo
     return novo;
 }
 
-Aluno* criarAlunoDeLinha(std::string linha) {
-    std::stringstream ss(linha);
-    std::string campos[7];
+Aluno* criarAlunoDeLinha(string linha) {
+    stringstream ss(linha);
+    string campos[7];
     int i = 0;
 
     while (getline(ss, campos[i], ',') && i < 7) {
         i++;
     }
-    return (criarAluno(campos[0], campos[1], campos[2], std::stof(campos[3]), std::stoi(campos[4]), campos[5], campos[6]));
+    return (criarAluno(campos[0], campos[1], campos[2], stof(campos[3]), stoi(campos[4]), campos[5], campos[6]));
 }
 
 
-void carregarArquivo(Alunos *alunos, std::string diretorio){
-    std::ifstream arquivo(diretorio);
-    std::string linha;
+void carregarArquivo(hashTable *tabela, string diretorio){
+    ifstream arquivo(diretorio);
+    string linha;
 
+    int contador = 0;
     if (arquivo.is_open()) {
         if (getline(arquivo, linha)){} // descarta a primeira linha;
 
         while (getline(arquivo, linha)){
             Aluno *novo_aluno = criarAlunoDeLinha(linha);
-            // inserir(alunos,novo_aluno);
-            inserir_simples(alunos, novo_aluno);         
+            // int ultimos_dois_digitos = stoi(novo_aluno->cpf.substr(novo_aluno->cpf.length() - 2, 2));
+            string tres_primeiros_digitos = (novo_aluno->cpf.substr(0, 3));
+            string quinto_digito_cpf = (novo_aluno->cpf.substr(4, 1));
+            int indice = stoi(tres_primeiros_digitos + quinto_digito_cpf);
+
+            Alunos* alunos = &tabela->tabela[indice];
+            if (inserir(alunos,novo_aluno)){
+                tabela->tamanho++;
+            }
+            contador++;
+            if (contador % 10000 == 0)
+            {
+                printf("%d\n",contador);
+            }     
         }
 
         arquivo.close();
@@ -139,7 +169,7 @@ void carregarArquivo(Alunos *alunos, std::string diretorio){
     else printf("Erro ao abrir o arquivo!\n");  
 }
 
-Aluno* buscarPorMatricula(Alunos *alunos, std::string matricula) {
+Aluno* buscarPorMatricula(Alunos *alunos, string matricula) {
     Aluno *atual = alunos->inicio;
 
     while (atual != NULL) {
@@ -153,7 +183,7 @@ Aluno* buscarPorMatricula(Alunos *alunos, std::string matricula) {
     return NULL;
 }
 
-Aluno* buscarPorCpf(Alunos *alunos, std::string cpf) {
+Aluno* buscarPorCpf(Alunos *alunos, string cpf) {
     Aluno *atual = alunos->inicio;
 
     while (atual != NULL) {
@@ -193,7 +223,7 @@ void excluir(Alunos *alunos, Aluno *aluno) {
 bool confirmarExclusao(Alunos *alunos, Aluno *aluno) {
     char resposta;
     printf("Deseja excluir o aluno %s? (s/n): ", aluno->nome.c_str());
-    std::cin >> resposta;
+    cin >> resposta;
     if (resposta == 's' || resposta == 'S') {
         excluir(alunos, aluno);
         printf("Aluno %s excluido com sucesso.\n", aluno->nome.c_str());
@@ -206,7 +236,7 @@ bool confirmarExclusao(Alunos *alunos, Aluno *aluno) {
 
 void menu(Alunos *alunos) {
     int opcao;
-    std::string matricula;
+    string matricula;
 
     do {
         printf("\nMenu:\n");
@@ -216,7 +246,7 @@ void menu(Alunos *alunos) {
         printf("4. Excluir Aluno\n");
         printf("5. Sair\n");
         printf("Escolha uma opcao: ");
-        std::cin >> opcao;
+        cin >> opcao;
 
         switch (opcao) {
             case 1: {
@@ -225,7 +255,7 @@ void menu(Alunos *alunos) {
             }
             case 2: {
                 printf("Digite a matricula do aluno: ");
-                std::cin >> matricula;
+                cin >> matricula;
                 Aluno* alunoEncontradoMat = buscarPorMatricula(alunos, matricula);
                 if (alunoEncontradoMat != NULL) {
                     confirmarExclusao(alunos, alunoEncontradoMat);
@@ -234,7 +264,7 @@ void menu(Alunos *alunos) {
             }
             case 3: {
                 printf("Digite o CPF do aluno: ");
-                std::cin >> matricula;
+                cin >> matricula;
                 Aluno* alunoEncontradoCpf = buscarPorCpf(alunos, matricula);
                 if (alunoEncontradoCpf != NULL) {
                     confirmarExclusao(alunos, alunoEncontradoCpf);
@@ -243,7 +273,7 @@ void menu(Alunos *alunos) {
             }
             case 4: {
                 printf("Digite a matricula do aluno a ser excluido: ");
-                std::cin >> matricula;
+                cin >> matricula;
                 Aluno *aluno = buscarPorMatricula(alunos, matricula);
                 if (aluno != NULL) {
                     confirmarExclusao(alunos, aluno);
@@ -262,14 +292,23 @@ void menu(Alunos *alunos) {
 }
 
 
-Alunos listaAlunos;
+hashTable tabela;
+
 int main(){
     clock_t inicio = clock();
-    inicializa(&listaAlunos);
-    carregarArquivo(&listaAlunos,"../alunos_completos.csv");
+    inicializaHashTable(&tabela);
+
+    carregarArquivo(&tabela,"../alunos_completos.csv");
     clock_t fim = clock();
     double tempo_execucao = double(fim - inicio) / CLOCKS_PER_SEC;
-    std::cout << "Tempo de execucao: " << tempo_execucao << " segundos\n";
-    menu(&listaAlunos);
+    cout << "Tempo de execucao: " << tempo_execucao << " segundos\n";
+    printf("Quantidade de alunos: %d\n", tabela.tamanho);
+    // menu(&tabela);
+
+    for (int i = 0; i < TAM; i++) {
+        if (tabela.tabela[i].quant > 0) {
+            printf("Hash %d: %d alunos\n", i, tabela.tabela[i].quant);
+        }
+    }
     return 0;
 }
