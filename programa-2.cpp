@@ -1,3 +1,9 @@
+// tamanho com tabela hash 100
+// tempo gasto: 11 minutos
+// tamanho hash 10000
+// tempo: 15 segundos
+
+
 #include <cstdio>
 #include <cstdlib>
 #include <string>
@@ -100,132 +106,164 @@ bool inserir(Alunos *alunos, Aluno *aluno){
     return true;
 }
 
-void imprime_alunos(Alunos *alunos) {
-    Aluno *atual = alunos->inicio;
-    
-    printf("Alunos - quantidade %d:\n",alunos->quant);
-    
-    while (atual != NULL) {
-        printf("%s - %s - %s\n", atual->matricula.c_str(), atual->cpf.c_str(), atual->nome.c_str());
-        atual = atual->prox;
-    } 
-}
-
-Aluno * criarAluno(string matricula, string cpf, string nome, float nota, int idade, string curso, string cidade){
-    Aluno* novo = new Aluno;
-    novo->prox = NULL;
-    novo->ant = NULL;
-    novo->matricula = matricula;
-    novo->cpf = cpf;
-    novo->nome = nome;
-    novo->nota = nota;
-    novo->idade = idade;
-    novo->curso = curso;
-    novo->cidade = cidade;
-
-    return novo;
-}
-
-Aluno* criarAlunoDeLinha(string linha) {
-    stringstream ss(linha);
-    string campos[7];
-    int i = 0;
-
-    while (getline(ss, campos[i], ',') && i < 7) {
-        i++;
+void imprime_alunos(hashTable *tabela) {
+    int total = 0;
+    for (int i = 0; i < TAM; i++) {
+        Aluno *atual = tabela->tabela[i].inicio;
+        while (atual != NULL) {
+            printf("%s - %s - %s\n", atual->matricula.c_str(), atual->cpf.c_str(), atual->nome.c_str());
+            atual = atual->prox;
+            total++;
+        }
     }
-    return (criarAluno(campos[0], campos[1], campos[2], stof(campos[3]), stoi(campos[4]), campos[5], campos[6]));
+    printf("Alunos - quantidade %d:\n", total);
 }
 
 
-void carregarArquivo(hashTable *tabela, string diretorio){
+void carregarArquivo(hashTable *tabela, string diretorio) {
     ifstream arquivo(diretorio);
     string linha;
 
+    if (!arquivo.is_open()) {
+        printf("Erro ao abrir o arquivo!\n");
+        return;
+    }
+
+    // Descarta a primeira linha (cabeçalho)
+    getline(arquivo, linha);
+
     int contador = 0;
-    if (arquivo.is_open()) {
-        if (getline(arquivo, linha)){} // descarta a primeira linha;
+    while (getline(arquivo, linha)) {
+        stringstream ss(linha);
+        string campos[7];
+        int i = 0;
 
-        while (getline(arquivo, linha)){
-            Aluno *novo_aluno = criarAlunoDeLinha(linha);
-            // int ultimos_dois_digitos = stoi(novo_aluno->cpf.substr(novo_aluno->cpf.length() - 2, 2));
-            string tres_primeiros_digitos = (novo_aluno->cpf.substr(0, 3));
-            string quinto_digito_cpf = (novo_aluno->cpf.substr(4, 1));
-            int indice = stoi(tres_primeiros_digitos + quinto_digito_cpf);
+        while (getline(ss, campos[i], ',') && i < 7) i++;
 
-            Alunos* alunos = &tabela->tabela[indice];
-            if (inserir(alunos,novo_aluno)){
-                tabela->tamanho++;
-            }
-            contador++;
-            if (contador % 10000 == 0)
-            {
-                printf("%d\n",contador);
-            }     
+        Aluno *novo_aluno = new Aluno{
+            NULL, NULL,
+            campos[0],
+            campos[1],
+            campos[2],
+            stof(campos[3]),
+            stoi(campos[4]),
+            campos[5],
+            campos[6]
+        };
+
+        int indice = stoi(novo_aluno->cpf.substr(0, 3) + novo_aluno->cpf.substr(4, 1));
+        // int indice = stoi(novo_aluno->cpf.substr(novo_aluno->cpf.length() - 2, 2));
+
+        Alunos* alunos = &tabela->tabela[indice];
+        if (inserir(alunos, novo_aluno)) {
+            tabela->tamanho++;
         }
 
-        arquivo.close();
+        contador++;
+        if (contador % 10000 == 0)
+        {
+            printf("%d\n",contador);
+        }  
     }
-    else printf("Erro ao abrir o arquivo!\n");  
+
+    arquivo.close();
 }
 
-Aluno* buscarPorMatricula(Alunos *alunos, string matricula) {
-    Aluno *atual = alunos->inicio;
 
-    while (atual != NULL) {
-        if (atual->matricula == matricula) {
-            printf("Aluno encontrado: %s - %s - %s\n", atual->matricula.c_str(), atual->cpf.c_str(), atual->nome.c_str());
-            return atual;
+// void carregarArquivo(hashTable *tabela, string diretorio){
+//     ifstream arquivo(diretorio);
+//     string linha;
+
+//     int contador = 0;
+//     if (arquivo.is_open()) {
+//         if (getline(arquivo, linha)){} // descarta a primeira linha;
+
+//         while (getline(arquivo, linha)){
+//             Aluno *novo_aluno = criarAlunoDeLinha(linha);
+//             // int ultimos_dois_digitos = stoi(novo_aluno->cpf.substr(novo_aluno->cpf.length() - 2, 2));
+
+//             // dados para 10000
+//             string tres_primeiros_digitos = (novo_aluno->cpf.substr(0, 3));
+//             string quinto_digito_cpf = (novo_aluno->cpf.substr(4, 1));
+//             int indice = stoi(tres_primeiros_digitos + quinto_digito_cpf);
+
+//             Alunos* alunos = &tabela->tabela[indice];
+//             if (inserir(alunos,novo_aluno)){
+//                 tabela->tamanho++;
+//             }
+//             contador++;
+//             if (contador % 10000 == 0)
+//             {
+//                 printf("%d\n",contador);
+//             }     
+//         }
+
+//         arquivo.close();
+//     }
+//     else printf("Erro ao abrir o arquivo!\n");  
+// }
+
+Aluno* buscarPorMatricula(hashTable *tabela, string matricula) {
+    for (int i = 0; i < TAM; i++) {
+        Aluno *atual = tabela->tabela[i].inicio;
+        while (atual != NULL) {
+            if (atual->matricula == matricula) {
+                printf("Aluno encontrado: %s - %s - %s\n", atual->matricula.c_str(), atual->cpf.c_str(), atual->nome.c_str());
+                return atual;
+            }
+            atual = atual->prox;
         }
-        atual = atual->prox;
     }
     printf("Aluno com matricula %s não encontrado.\n", matricula.c_str());
     return NULL;
 }
 
-Aluno* buscarPorCpf(Alunos *alunos, string cpf) {
-    Aluno *atual = alunos->inicio;
-
-    while (atual != NULL) {
-        if (atual->cpf == cpf) {
-            printf("Aluno encontrado: %s - %s - %s\n", atual->matricula.c_str(), atual->cpf.c_str(), atual->nome.c_str());
-            return atual;
+Aluno* buscarPorCpf(hashTable *tabela, string cpf) {
+    for (int i = 0; i < TAM; i++) {
+        Aluno *atual = tabela->tabela[i].inicio;
+        while (atual != NULL) {
+            if (atual->cpf == cpf) {
+                printf("Aluno encontrado: %s - %s - %s\n", atual->matricula.c_str(), atual->cpf.c_str(), atual->nome.c_str());
+                return atual;
+            }
+            atual = atual->prox;
         }
-        atual = atual->prox;
     }
     printf("Aluno com CPF %s não encontrado.\n", cpf.c_str());
     return NULL;
 }
 
-void excluir(Alunos *alunos, Aluno *aluno) {
-    Aluno *atual = alunos->inicio;
-
-    while (atual != NULL) {
-        if (atual == aluno) {
-            if (atual->ant != NULL) {
-                atual->ant->prox = atual->prox;
-            } else {
-                alunos->inicio = atual->prox;
+void excluir(hashTable *tabela, Aluno *aluno) {
+    for (int i = 0; i < TAM; i++) {
+        Aluno *atual = tabela->tabela[i].inicio;
+        while (atual != NULL) {
+            if (atual == aluno) {
+                if (atual->ant != NULL) {
+                    atual->ant->prox = atual->prox;
+                } else {
+                    tabela->tabela[i].inicio = atual->prox;
+                }
+                if (atual->prox != NULL) {
+                    atual->prox->ant = atual->ant;
+                } else {
+                    tabela->tabela[i].final = atual->ant;
+                }
+                delete atual;
+                tabela->tabela[i].quant--;
+                tabela->tamanho--;
+                return;
             }
-            if (atual->prox != NULL) {
-                atual->prox->ant = atual->ant;
-            } else {
-                alunos->final = atual->ant;
-            }
-            delete atual;
-            alunos->quant--;
-            return;
+            atual = atual->prox;
         }
-        atual = atual->prox;
     }
 }
 
-bool confirmarExclusao(Alunos *alunos, Aluno *aluno) {
+bool confirmarExclusao(hashTable *tabela, Aluno *aluno) {
     char resposta;
     printf("Deseja excluir o aluno %s? (s/n): ", aluno->nome.c_str());
     cin >> resposta;
     if (resposta == 's' || resposta == 'S') {
-        excluir(alunos, aluno);
+        excluir(tabela, aluno);
         printf("Aluno %s excluido com sucesso.\n", aluno->nome.c_str());
         return true;
     } else {
@@ -234,7 +272,7 @@ bool confirmarExclusao(Alunos *alunos, Aluno *aluno) {
     }
 }
 
-void menu(Alunos *alunos) {
+void menu(hashTable *tabelaAlunos) {
     int opcao;
     string matricula;
 
@@ -250,33 +288,33 @@ void menu(Alunos *alunos) {
 
         switch (opcao) {
             case 1: {
-                imprime_alunos(alunos);
+                imprime_alunos(tabelaAlunos);
                 break;
             }
             case 2: {
                 printf("Digite a matricula do aluno: ");
                 cin >> matricula;
-                Aluno* alunoEncontradoMat = buscarPorMatricula(alunos, matricula);
+                Aluno* alunoEncontradoMat = buscarPorMatricula(tabelaAlunos, matricula);
                 if (alunoEncontradoMat != NULL) {
-                    confirmarExclusao(alunos, alunoEncontradoMat);
+                    confirmarExclusao(tabelaAlunos, alunoEncontradoMat);
                 }
                 break;
             }
             case 3: {
                 printf("Digite o CPF do aluno: ");
                 cin >> matricula;
-                Aluno* alunoEncontradoCpf = buscarPorCpf(alunos, matricula);
+                Aluno* alunoEncontradoCpf = buscarPorCpf(tabelaAlunos, matricula);
                 if (alunoEncontradoCpf != NULL) {
-                    confirmarExclusao(alunos, alunoEncontradoCpf);
+                    confirmarExclusao(tabelaAlunos, alunoEncontradoCpf);
                 }
                 break;
             }
             case 4: {
                 printf("Digite a matricula do aluno a ser excluido: ");
                 cin >> matricula;
-                Aluno *aluno = buscarPorMatricula(alunos, matricula);
+                Aluno *aluno = buscarPorMatricula(tabelaAlunos, matricula);
                 if (aluno != NULL) {
-                    confirmarExclusao(alunos, aluno);
+                    confirmarExclusao(tabelaAlunos, aluno);
                 }
                 break;
             }
@@ -297,18 +335,14 @@ hashTable tabela;
 int main(){
     clock_t inicio = clock();
     inicializaHashTable(&tabela);
-
     carregarArquivo(&tabela,"../alunos_completos.csv");
+
+
     clock_t fim = clock();
     double tempo_execucao = double(fim - inicio) / CLOCKS_PER_SEC;
-    cout << "Tempo de execucao: " << tempo_execucao << " segundos\n";
+    cout << "Tempo gasto para carregar arquivo: " << tempo_execucao << " segundos\n";
     printf("Quantidade de alunos: %d\n", tabela.tamanho);
-    // menu(&tabela);
 
-    for (int i = 0; i < TAM; i++) {
-        if (tabela.tabela[i].quant > 0) {
-            printf("Hash %d: %d alunos\n", i, tabela.tabela[i].quant);
-        }
-    }
+    menu(&tabela);
     return 0;
 }
