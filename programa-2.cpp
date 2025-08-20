@@ -153,6 +153,7 @@ void carregarArquivo(hashTable *tabela, string diretorio) {
 
         int indice = stoi(novo_aluno->cpf.substr(0, 3) + novo_aluno->cpf.substr(4, 1));
         // int indice = stoi(novo_aluno->cpf.substr(novo_aluno->cpf.length() - 2, 2));
+        // printf("%d\n", indice);
 
         Alunos* alunos = &tabela->tabela[indice];
         if (inserir(alunos, novo_aluno)) {
