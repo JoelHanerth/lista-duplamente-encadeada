@@ -117,7 +117,7 @@ void ordenarPorNome(hashTable *tabela_hash_alunos) {
         Alunos *alunos = &tabela_hash_alunos->tabela[i];
         if (alunos->quant <= 1) continue;
 
-        std::vector<Aluno *> vetor_alunos(alunos->quant);
+        vector<Aluno *> vetor_alunos(alunos->quant);
 
         Aluno *atual = alunos->inicio;
         for (int j = 0; j < alunos->quant; j++) {
@@ -125,7 +125,7 @@ void ordenarPorNome(hashTable *tabela_hash_alunos) {
             atual = atual->prox;
         }
 
-        std::sort(
+        sort(
             vetor_alunos.begin(),
             vetor_alunos.end(),
             [](Aluno *a, Aluno *b) { return a->nome < b->nome; }
